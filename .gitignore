@@ -1,5 +1,7 @@
 node_modules/
 .env
-
+db/config.js
 .idea
 .vscode
+
+# postgresql://nastya:zuoqATPI8qy9koU9QA88rIuXHznByiHx@dpg-cqoi8lrv2p9s73aqiie0-a.frankfurt-postgres.render.com/db_contacts_mjnr
