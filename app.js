@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+
 import sequelize from "./db/sequelize.js";
 
 import contactsRouter from "./routes/contactsRouter.js";
