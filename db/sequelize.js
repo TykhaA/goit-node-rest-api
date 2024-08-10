@@ -11,9 +11,9 @@ const {
 } = process.env;
 
 export const dataBaseConfig = {
-  username: DATABASE_NAME,
+  database: DATABASE_NAME,
   dialect: DATABASE_DIALECT,
-  database: DATABASE_USERNAME,
+  username: DATABASE_USERNAME,
   password: DATABASE_PASSWORD,
   host: DATABASE_HOST,
   port: DATABASE_PORT,

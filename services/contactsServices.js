@@ -1,55 +1,38 @@
 import fs from "node:fs/promises";
-import path from "node:path";
-import { nanoid } from "nanoid";
 
-const contactsPath = path.resolve("db", "contacts.json");
+import User from "../db/models/User.js";
 
 const updateContactData = (contacts) =>
   fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
 
-export async function getAllContacts() {
-  const data = await fs.readFile(contactsPath, "utf-8");
-  return JSON.parse(data);
-}
+export const getAllContacts = async () => User.findAll();
 
-export async function getOneContact(contactId) {
-  const contact = await getAllContacts();
-  const result = contact.find((item) => item.id === contactId);
-  return result || null;
-}
+export const getOneContact = async (id) => User.findByPk(id);
 
-export async function deleteContact(contactId) {
-  const contacts = await getAllContacts();
-  const index = contacts.findIndex((item) => item.id === contactId);
-  if (index === -1) {
-    return null;
+export const deleteContact = async (id) =>
+  User.destroy({
+    where: { id },
+  });
+
+export const createContact = async (data) => User.create(data);
+
+export const updateContact = async (id, data) =>
+  User.update(data, {
+    where: {
+      id,
+    },
+  });
+
+export const updateStatusContact = async (id, favorite) => {
+  const [update] = await User.update(
+    { favorite },
+    {
+      where: { id },
+    }
+  );
+  if (update) {
+    const updateContact = await User.findByPk(id);
+    return updateContact;
   }
-  const [result] = contacts.splice(index, 1);
-  await updateContactData(contacts);
-  return result;
-}
-
-export async function createContact(data) {
-  const contacts = await getAllContacts();
-  const newContact = {
-    id: nanoid(),
-    ...data,
-  };
-
-  contacts.push(newContact);
-  await updateContactData(contacts);
-  return newContact;
-}
-
-export const updateContact = async (id, data) => {
-  const contacts = await getAllContacts();
-  const index = contacts.findIndex((item) => item.id === id);
-  if (index === -1) {
-    return null;
-  }
-
-  contacts[index] = { ...contacts[index], ...data };
-  await updateContactData(contacts);
-
-  return contacts[index];
+  throw HttpError(404);
 };
