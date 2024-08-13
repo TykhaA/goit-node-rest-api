@@ -16,23 +16,25 @@ export const deleteContact = async (id) =>
 
 export const createContact = async (data) => User.create(data);
 
-export const updateContact = async (id, data) =>
-  User.update(data, {
+export const updateContact = async (id, data) => {
+  const [update] = await User.update(data, {
     where: {
       id,
     },
   });
-
-export const updateStatusContact = async (id, favorite) => {
-  const [update] = await User.update(
-    { favorite },
-    {
-      where: { id },
-    }
-  );
   if (update) {
     const updateContact = await User.findByPk(id);
     return updateContact;
   }
-  throw HttpError(404);
 };
+
+// export const updateStatusContact = async (id, favorite) => {
+//   console.log(favorite);
+//   const [update] = await User.update(favorite, {
+//     where: { id },
+//   });
+//   if (update) {
+//     const updateContact = await User.findByPk(id);
+//     return updateContact;
+//   }
+// };
