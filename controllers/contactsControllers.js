@@ -22,11 +22,12 @@ const deleteContact = async (req, res) => {
   const result = await contactsService.deleteContact(id);
 
   if (!result) {
-    throw HttpError(404, error.message);
+    throw HttpError(404, `Contact with id=${id} not found`);
+  } else {
+    res.json({
+      message: "Contact delete succesfuly",
+    });
   }
-  res.json({
-    message: "Contact delete succesfuly",
-  });
 };
 
 const createContact = async (req, res) => {
