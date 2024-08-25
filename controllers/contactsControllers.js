@@ -3,13 +3,20 @@ import HttpError from "../helpers/HttpError.js";
 import ctrlWrapper from "../decorator/controllerWrapper.js";
 
 const getAllContacts = async (req, res) => {
-  const result = await contactsService.getAllContacts();
+  const { id: owner } = req.user;
+  const { page = 1, limit = 10 } = req.query;
+
+  const result = await contactsService.getAllContacts(
+    { owner },
+    { page, limit }
+  );
   res.json(result);
 };
 
 const getOneContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.getOneContact(id);
+  const { id: owner } = req.user;
+  const result = await contactsService.getContact(id, owner);
   if (!result) {
     throw HttpError(404, `Contact with id=${id} not found`);
   }
@@ -19,7 +26,8 @@ const getOneContact = async (req, res) => {
 
 const deleteContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.deleteContact(id);
+  const { id: owner } = req.user;
+  const result = await contactsService.deleteContact({ id, owner });
 
   if (!result) {
     throw HttpError(404, `Contact with id=${id} not found`);
@@ -31,29 +39,42 @@ const deleteContact = async (req, res) => {
 };
 
 const createContact = async (req, res) => {
-  const result = await contactsService.createContact(req.body);
+  const { id: owner } = req.user;
+  const result = await contactsService.createContact({ ...req.body, owner });
   res.status(201).json(result);
 };
 
-const updateContact = async ({ params: { id }, body }, res) => {
-  if (!Object.keys(body).length) {
+const updateContact = async (req, res) => {
+  const { id } = req.params;
+  const { id: owner } = req.user;
+
+  const updatedData = req.body;
+
+  if (!Object.keys(req.body).length) {
     throw HttpError(400, `There is no parameters`);
   }
-  const result = await contactsService.updateContact(id, body);
+  const result = await contactsService.updateContact(
+    { id, owner },
+    updatedData
+  );
+
   if (!result) {
     throw HttpError(404, `Contact with id=${id} not found`);
   }
   res.status(200).json(result);
 };
 const updateStatusContact = async (req, res, next) => {
-  const { contactId } = req.params;
-  const data = req.body;
-  if (typeof data.favorite !== "boolean") {
+  const { id } = req.params;
+  const { favorite } = req.body;
+  const { id: owner } = req.user;
+  if (typeof { favorite } !== "boolean") {
     throw HttpError(400, "Favorite field must be a boolean");
   }
   try {
-    const updateContact = await contactsService.updateContact(contactId, data);
-    console.log(updateContact);
+    const updateContact = await contactsService.updateContact(
+      { id, owner },
+      { favorite }
+    );
     if (!updateContact) {
       throw HttpError(404, `Contact with id=${contactId} not found`);
     }

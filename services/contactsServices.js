@@ -1,40 +1,38 @@
-import fs from "node:fs/promises";
+import dbContacts from "../db/models/dbContacts.js";
 
-import User from "../db/models/User.js";
+export const getAllContacts = async (query = {}, options = {}) => {
+  const { page = 1, limit = 20 } = options;
+  const normalizedLimit = Number(limit);
+  const offset = (Number(page) - 1) * normalizedLimit;
+  return dbContacts.findAll({
+    where: query,
+    limit: normalizedLimit,
+    offset,
+  });
+};
 
-const updateContactData = (contacts) =>
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-
-export const getAllContacts = async () => User.findAll();
-
-export const getOneContact = async (id) => User.findByPk(id);
-
-export const deleteContact = async (id) =>
-  User.destroy({
-    where: { id },
+export const getContact = async (query) =>
+  dbContacts.findOne({
+    where: query,
   });
 
-export const createContact = async (data) => User.create(data);
+export const deleteContact = async (query) =>
+  dbContacts.destroy({
+    where: query,
+  });
 
-export const updateContact = async (id, data) => {
-  const [update] = await User.update(data, {
+export const createContact = async (data) => dbContacts.create(data);
+
+export const updateContact = async (query, data) => {
+  const contact = await getContact(query);
+  const { id } = query;
+  if (!contact) {
+    return null;
+  }
+
+  return dbContacts.update(data, {
     where: {
       id,
     },
   });
-  if (update) {
-    const updateContact = await User.findByPk(id);
-    return updateContact;
-  }
 };
-
-// export const updateStatusContact = async (id, favorite) => {
-//   console.log(favorite);
-//   const [update] = await User.update(favorite, {
-//     where: { id },
-//   });
-//   if (update) {
-//     const updateContact = await User.findByPk(id);
-//     return updateContact;
-//   }
-// };
