@@ -1,5 +1,6 @@
 import User from "../db/models/User.js";
 import bcrypt from "bcrypt";
+import gravatar from "gravatar";
 
 export const findUser = (query) =>
   User.findOne({
@@ -17,9 +18,14 @@ export const updateUser = async (query, data) => {
 
 export const signup = async (data) => {
   try {
-    const { password } = data;
+    const { password, email } = data;
     const hashPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ ...data, password: hashPassword });
+    const poster = gravatar.url(email);
+    const newUser = await User.create({
+      ...data,
+      password: hashPassword,
+      avatarURL: poster,
+    });
     return newUser;
   } catch (error) {
     if (error?.parent?.code === "23505") {

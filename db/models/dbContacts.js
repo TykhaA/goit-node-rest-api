@@ -29,5 +29,5 @@ const dbContacts = sequelize.define(
     timestamps: false,
   }
 );
-// dbContacts.sync({ force: true });
+//dbContacts.sync();
 export default dbContacts;
