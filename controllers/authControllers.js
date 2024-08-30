@@ -19,6 +19,37 @@ const signup = async (req, res) => {
     avatarURL: newUser.avatarURL,
   });
 };
+const verify = async (req, res) => {
+  const { verificationCode } = req.params;
+  const user = await authServices.findUser({ verificationCode });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  await authServices.updateUser(
+    { verificationCode },
+    { verify: true, verificationCode: null }
+  );
+
+  res.json({
+    message: "Email verified",
+  });
+};
+const resendVerify = async (req, res) => {
+  const { email } = req.body;
+  const user = await authServices.findUser({ email });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+  await authServices.sendVerifyEmail(user.email, user.verificationCode);
+
+  res.json({
+    message: "Verification email resent",
+  });
+};
 
 const signin = async (req, res) => {
   const { email, password } = req.body;
@@ -26,6 +57,9 @@ const signin = async (req, res) => {
   const user = await authServices.findUser({ email });
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
+  }
+  if (!user.verify) {
+    throw HttpError(401, "Email not verify ");
   }
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
@@ -79,6 +113,8 @@ const logout = async (req, res) => {
 
 export default {
   signup: ctrlWrapper(signup),
+  verify: ctrlWrapper(verify),
+  resendVerify: ctrlWrapper(resendVerify),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   setAvatar: ctrlWrapper(setAvatar),
