@@ -1,11 +1,13 @@
 import multer from "multer";
 import path from "node:path";
+import HttpError from "../helpers/HttpError.js";
+
 const destination = path.resolve("temp");
 
 const storage = multer.diskStorage({
   destination,
   filename: (req, file, callback) => {
-    const uniquePrefix = `${Date.mow}_${Math.round(Math.random() * 1e9)}`;
+    const uniquePrefix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
     const filename = `${uniquePrefix}_${file.originalname}`;
     callback(null, filename);
   },
@@ -13,8 +15,18 @@ const storage = multer.diskStorage({
 const limits = {
   fileSize: 1024 * 1024 * 5,
 };
+
+const fileFilter = (req, file, callback) => {
+  const extension = file.originalname.split(".").pop();
+  if (extension !== "jpeg" && extension !== "jpg" && extension !== "png") {
+    return cb(HttpError(400, "Allowed only jpeg/png-files"));
+  }
+  callback(null, true);
+};
+
 const upload = multer({
   storage,
   limits,
+  fileFilter,
 });
 export default upload;
